@@ -7,7 +7,7 @@ if (!$con){
 }
 
 // Prepare the statement
-$stmt= $con->prepare("INSERT INTO `item` (`title`, `description`, `funding`) VALUES (?,?,?,?)");
+$stmt= $con->prepare("INSERT INTO `item` (`title`, `description`, `funding`) VALUES (?,?,?)");
 
 /*
 // inputs from form via Superglobals $_POST or $_GET

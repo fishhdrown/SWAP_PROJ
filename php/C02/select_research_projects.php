@@ -1,122 +1,82 @@
-<?php
-// Start of PHP logic for form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Database credentials
-    $dbHost = 'localhost';  // server location
-    $dbUser = 'admin';      // username
-    $dbPass = 'admin';      // password
-    $dbName = 'project_swap'; // name of database
-
-    // Connect to the database
-    $conn = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
-
-    // Check connection (seriously, no errors pls :') )
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);  // If connection fails, no data, no fun :(
-    }
-
-    // Retrieve form data [getting those user inputs >:)) ]
-    $in_title = htmlspecialchars($_POST['in_title']);       // Sanitize the project title
-    $in_description = htmlspecialchars($_POST['in_description']);  // Sanitize the project description
-    $in_funding = htmlspecialchars($_POST['in_funding']);         // Sanitize the funding amount
-    $in_team_members = htmlspecialchars($_POST['in_team_members']); // Sanitize the number of team members
-
-    // Input validation
-    if (empty($in_title) || empty($in_description) || empty($in_funding) || empty($in_team_members)) {
-        // Popup error message if fields are empty
-        echo "
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    alert('All fields are required!');  // Simple alert for missing input
-                });
-            </script>
-        ";
-    } else {
-        // Prepare SQL statement to insert data into the database
-        $stmt = $conn->prepare("INSERT INTO research_projects (title, description, funding, team_members) VALUES (?, ?, ?, ?)");
-
-        // Bind parameters to the statement (bind values for each placeholder)
-        $stmt->bind_param('ssdi', $in_title, $in_description, $in_funding, $in_team_members); 
-
-        // Execute the statement
-        if ($stmt->execute()) {
-            echo "<script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        alert('Project inserted successfully!');
-                    });
-                  </script>";
-        } else {
-            echo "<script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        alert('Error inserting data.');
-                    });
-                  </script>";
-        }
-
-        // Close the statement and the connection
-        $stmt->close();
-    }
-
-    // Close the database connection
-    $conn->close();
-}
-?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Insert Research Project</title>
-    <style>
-        #title {
-            text-align: center;
-        }
-        table {
-            border: 1px solid #000;
-            border-collapse: collapse;
-            margin: 20px auto;
-        }
-        th, td {
-            padding: 10px;
-            text-align: center;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+    <title>Research Projects</title>
 </head>
 <body>
 
-<!-- Page Title -->
-<h3 id="title">Insert Research Project</h3>
+<?php
+// Database connection credentials
+$dbHost = 'localhost';
+$dbUser = 'admin';
+$dbPass = 'admin';
+$dbName = 'project_swap';
 
-<!-- Form to insert a new research project -->
-<form action="" method="POST">
-    <table align="center">
-        <tr>
-            <td>Title:</td>
-            <td><input type="text" name="in_title" required></td>
-        </tr>
-        <tr>
-            <td>Description:</td>
-            <td><input type="text" name="in_description" required></td>
-        </tr>
-        <tr>
-            <td>Funding:</td>
-            <td><input type="number" step="0.01" name="in_funding" required></td>
-        </tr>
-        <tr>
-            <td>Team Members:</td>
-            <td><input type="number" name="in_team_members" required></td>
-        </tr>
-        <tr>
-            <td colspan="2" align="center">
-                <input type="submit" value="Insert Record">
-            </td>
-        </tr>
-    </table>
-</form>
+// Connect to database
+$con = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
+
+// Check connection
+if (!$con) {
+    die('Could not connect: ' . mysqli_connect_error()); // Return error if connection fails
+}
+
+// Check if the form was submitted
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Collect and sanitize input data from the form
+    $in_title = htmlspecialchars($_POST["in_title"]);
+    $in_description = htmlspecialchars($_POST["in_description"]);
+    $in_funding = intval($_POST["in_funding"]); // Ensure funding is an integer
+
+    // Prepare SQL query using a prepared statement to prevent SQL injection
+    $stmt = $con->prepare("INSERT INTO research_projects (title, description, funding) VALUES (?, ?, ?)");
+
+    // Check if the statement was prepared correctly
+    if ($stmt === false) {
+        die('Prepare failed: ' . $con->error);
+    }
+
+    // Bind parameters to the SQL statement
+    // 's' stands for string, 'i' stands for integer
+    $stmt->bind_param('ssi', $in_title, $in_description, $in_funding);
+
+    // Execute the query and check if the insert was successful
+    if ($stmt->execute()) {
+        echo "Insert Query executed successfully.";
+        header("Location: select_research_projects.php"); // Redirect to another page after success
+        exit; // Ensure no further code is executed after the redirect
+    } else {
+        echo "Error executing INSERT query: " . $stmt->error;
+    }
+
+    // Close the prepared statement
+    $stmt->close();
+}
+
+// Fetch and display data from the database
+$query = "SELECT * FROM research_projects";
+$result = mysqli_query($con, $query);
+
+if ($result) {
+    echo '<table border="1" bgcolor="pink" align="center">';
+    echo '<tr><th>ID</th><th>Title</th><th>Description</th><th>Funding</th><th colspan="2">UPDATE</th></tr>';
+    while ($row = mysqli_fetch_assoc($result)) {
+        echo '<tr>';
+        echo '<td>' . $row['id'] . '</td>';
+        echo '<td>' . $row['title'] . '</td>';
+        echo '<td>' . $row['description'] . '</td>';
+        echo '<td>' . $row['funding'] . '</td>';
+        echo '<td><a href="update_research_projects.php?id=' . $row['id'] . '">Edit</a></td>';  // Update link
+        echo '<td><a href="delete_research_projects.php?id=' . $row['id'] . '">Delete</a></td>'; // Delete link
+        echo '</tr>';
+    }
+    echo '</table>';
+} else {
+    echo "Error fetching data: " . mysqli_error($con);
+}
+
+// Close SQL connection
+mysqli_close($con);
+?>
 
 </body>
 </html>

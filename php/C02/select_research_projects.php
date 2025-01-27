@@ -57,11 +57,11 @@ $query = "SELECT * FROM research_projects";
 $result = mysqli_query($con, $query);
 
 if ($result) {
-    echo '<table border="1" bgcolor="pink" align="center">';
+    echo '<table border="1" bgcolor="turquoise" align="center">';
     echo '<tr><th>ID</th><th>Title</th><th>Description</th><th>Funding</th><th colspan="2">UPDATE</th></tr>';
     while ($row = mysqli_fetch_assoc($result)) {
         echo '<tr>';
-        echo '<td>' . $row['id'] . '</td>';
+        // echo '<td>' . $row['id'] . '</td>';
         echo '<td>' . $row['title'] . '</td>';
         echo '<td>' . $row['description'] . '</td>';
         echo '<td>' . $row['funding'] . '</td>';

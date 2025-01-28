@@ -26,11 +26,11 @@
                 <li class="dropdown">
                     <button class="dropdown-btn">Research Projects</button>
                     <ul class="dropdown-content">
-                        <li><a href="php/C02/insert_research_projects.php">Insert Project</a></li>
-                        <li><a href="php/C02/select_research_projects.php">Select Project</a></li>
-                        <li><a href="php/C02/update_research_projects.php">Update Project</a></li>
-                        <li><a href="php/C02/delete_research_projects.php">Delete Project</a></li>
-                        <li><a href="php/C02/read_research_projects.php">Read Project</a></li>
+                        <li><a href="/SWAP_PROJ/php/C02/insert_research_projects.php">Insert Project</a></li>
+                        <li><a href="/SWAP_PROJ/php/C02/select_research_projects.php">Select Project</a></li>
+                        <li><a href="/SWAP_PROJ/php/C02/update_research_projects.php">Update Project</a></li>
+                        <li><a href="/SWAP_PROJ/php/C02/delete_research_projects.php">Delete Project</a></li>
+                        <li><a href="/SWAP_PROJ/php/C02/read_research_projects.php">Read Project</a></li>
                     </ul>
                 </li>
                 

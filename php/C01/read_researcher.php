@@ -1,9 +1,7 @@
 <html>
 <head>
+    <title>Researcher Profiles</title>
     <style>
-        #title {
-            text-align: center;
-        }
         table {
             width: 80%;
             margin: auto;
@@ -17,28 +15,43 @@
         th {
             background-color: #f2f2f2;
         }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #4CAF50; /* Green */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
-
-<h3 id="title">Researcher Profiles</h3>
-
+ 
+<h2>Researcher Profiles</h2>
+ 
 <?php
-// Connect to the database
+// Database connection
 $con = mysqli_connect("localhost", "admin", "admin", "project_swap");
 if (!$con) {
-    die('Could not connect: ' . mysqli_connect_errno()); // Return error if connection fails
+    die('Database connection failed: ' . mysqli_connect_error());
 }
-
-// Prepare and execute query to fetch all records
+ 
 $stmt = $con->prepare("SELECT * FROM researcher_profiles");
 $stmt->execute();
 $result = $stmt->get_result();
-
-// Display records in a table
+ 
+// Display the records
 echo '<table>';
 echo '<tr><th>ID</th><th>Name</th><th>Email</th><th>Expertise ID</th><th>Assigned Projects ID</th></tr>';
-
+ 
 while ($row = $result->fetch_assoc()) {
     echo '<tr>';
     echo '<td>' . $row['id'] . '</td>';
@@ -48,22 +61,19 @@ while ($row = $result->fetch_assoc()) {
     echo '<td>' . $row['assigned_projects_id'] . '</td>';
     echo '</tr>';
 }
-
+ 
 echo '</table>';
-
+ 
 $stmt->close();
 $con->close();
 ?>
-
-<!-- Button to navigate to insert_proj.php or select_proj.php -->
-<div style="text-align: center; margin-top: 20px;">
-    <a href="select_proj.php">
-        <button>Add Researcher Profiles</button>
-    </a>
-    <a href="insert_proj.php" style="margin-left: 20px;">
-        <button>Update Profiles</button>
+ 
+<div class="button-container">
+    <!-- Back button to return to Insert Researcher page -->
+    <a href="insert_researcher.php">
+        <button>Back</button>
     </a>
 </div>
-
+ 
 </body>
 </html>

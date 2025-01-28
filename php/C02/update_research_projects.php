@@ -21,20 +21,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $upd_funding = filter_var($_POST['upd_funding'], FILTER_SANITIZE_NUMBER_INT);
         $id = filter_var($_GET['id'], FILTER_SANITIZE_NUMBER_INT);
 
-        // Prepare update statement
-        $update_stmt = $con->prepare("UPDATE research_projects SET title = ?, description = ?, funding = ? WHERE id = ?");
-        if ($update_stmt === false) {
+        // Check for duplicate title
+        $check_stmt = $con->prepare("SELECT id FROM research_projects WHERE title = ? AND id != ?");
+        if ($check_stmt === false) {
             throw new Exception('Prepare failed: ' . $con->error);
         }
 
-        // Bind parameters and execute
-        $update_stmt->bind_param('ssii', $upd_title, $upd_description, $upd_funding, $id);
-        if ($update_stmt->execute()) {
-            echo "<script>alert('Record updated successfully!');</script>";
-            echo "<script>window.location.href='select_research_projects.php';</script>";
-            exit;
+        $check_stmt->bind_param('si', $upd_title, $id);
+        $check_stmt->execute();
+        $check_result = $check_stmt->get_result();
+
+        if ($check_result->num_rows > 0) {
+            echo "<script>alert('Title already exists. Please try a different title.');</script>";
+            $check_stmt->close();
         } else {
-            throw new Exception("Error updating record: " . $update_stmt->error);
+            // Prepare update statement
+            $update_stmt = $con->prepare("UPDATE research_projects SET title = ?, description = ?, funding = ? WHERE id = ?");
+            if ($update_stmt === false) {
+                throw new Exception('Prepare failed: ' . $con->error);
+            }
+
+            // Bind parameters and execute
+            $update_stmt->bind_param('ssii', $upd_title, $upd_description, $upd_funding, $id);
+            if ($update_stmt->execute()) {
+                echo "<script>alert('Record updated successfully!');</script>";
+                echo "<script>window.location.href='select_research_projects.php';</script>";
+                exit;
+            } else {
+                throw new Exception("Error updating record: " . $update_stmt->error);
+            }
+
+            $update_stmt->close();
         }
     } catch (Exception $e) {
         echo "Error: " . $e->getMessage();
@@ -73,7 +90,6 @@ $result = $stmt->get_result();
         table {
             margin: 20px auto;
             padding: 10px;
-            /* border-collapse: collapse; */
             background-color: #fdfd96;
         }
         input[type="text"], input[type="number"] {

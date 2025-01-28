@@ -31,29 +31,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </script>
         ";
     } else {
-        // Prepare SQL statement to insert data into the database
-        $stmt = $conn->prepare("INSERT INTO research_projects (`title`, `description`, `funding`, ) VALUES (?, ?, ?)");
+        // Check for duplicate title
+        $check_query = $conn->prepare("SELECT COUNT(*) FROM research_projects WHERE title = ?");
+        $check_query->bind_param('s', $in_title);
+        $check_query->execute();
+        $check_query->bind_result($title_count);
+        $check_query->fetch();
+        $check_query->close();
 
-        // Bind parameters to the statement (bind values for each placeholder)
-        $stmt->bind_param('ssi', $in_title, $in_description, $in_funding); 
-
-        // Execute the statement
-        if ($stmt->execute()) {
-            echo "<script>
+        if ($title_count > 0) {
+            // Alert user if title already exists
+            echo "
+                <script>
                     document.addEventListener('DOMContentLoaded', function () {
-                        alert('Project inserted successfully!');
+                        alert('Title already exists! Please use a unique title.');
                     });
-                  </script>";
+                </script>
+            ";
         } else {
-            echo "<script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        alert('Error inserting data.');
-                    });
-                  </script>";
-        }
+            // Prepare SQL statement to insert data into the database
+            $stmt = $conn->prepare("INSERT INTO research_projects (`title`, `description`, `funding`) VALUES (?, ?, ?)");
 
-        // Close the statement and the connection
-        $stmt->close();
+            if ($stmt) {
+                // Bind parameters to the statement (bind values for each placeholder)
+                $stmt->bind_param('ssi', $in_title, $in_description, $in_funding); 
+
+                // Execute the statement
+                if ($stmt->execute()) {
+                    echo "<script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                alert('Project inserted successfully!');
+                            });
+                          </script>";
+                } else {
+                    echo "<script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                alert('Error inserting data.');
+                            });
+                          </script>";
+                }
+
+                // Close the statement
+                $stmt->close();
+            } else {
+                echo "Error preparing the SQL statement.";
+            }
+        }
     }
 
     // Close the database connection
@@ -91,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <h3 id="title">Insert Research Project</h3>
 
 <!-- Form to insert a new research project -->
-<form action="select_research_projects.php" method="POST">
+<form action="" method="POST">
     <table align="center">
         <tr>
             <td>Title:</td>

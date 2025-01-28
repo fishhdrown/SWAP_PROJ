@@ -12,13 +12,31 @@ if (!$con) {
     die('Could not connect: ' . mysqli_connect_error());
 }
 
-// Fetch all titles from the database
-$title_query = "SELECT id, title FROM research_projects";
-$title_result = mysqli_query($con, $title_query);
-
-// Handle form submission (fetch details for the selected title)
+// Initialize variables
+$search_query = '';
+$search_results = [];
 $project_details = null;
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+// Handle search form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_query'])) {
+    $search_query = filter_var($_POST['search_query'], FILTER_SANITIZE_STRING);
+
+    if (strlen($search_query) >= 3) {
+        $search_stmt = $con->prepare("SELECT id, title FROM research_projects WHERE title LIKE ?");
+        if ($search_stmt === false) {
+            die('Prepare failed: ' . $con->error);
+        }
+
+        $search_term = '%' . $search_query . '%';
+        $search_stmt->bind_param('s', $search_term);
+        $search_stmt->execute();
+        $search_results = $search_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $search_stmt->close();
+    }
+}
+
+// Handle project detail fetch
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['project_id'])) {
     $selected_id = filter_var($_POST['project_id'], FILTER_SANITIZE_NUMBER_INT);
 
     $detail_stmt = $con->prepare("SELECT * FROM research_projects WHERE id = ?");
@@ -41,13 +59,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Read Research Projects</title>
+    <title>Search Research Projects</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
         }
-        select, input[type="submit"] {
+        input[type="text"], input[type="submit"] {
             padding: 5px;
             margin: 10px 0;
         }
@@ -69,19 +87,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <h1>View Research Projects</h1>
+    <h1>Search Research Projects</h1>
     <form method="POST" action="">
-        <label for="project_id">Select a Project Title:</label>
-        <select name="project_id" id="project_id" required>
-            <option value="">-- Select Title --</option>
-            <?php while ($row = mysqli_fetch_assoc($title_result)): ?>
-                <option value="<?php echo htmlspecialchars($row['id']); ?>">
-                    <?php echo htmlspecialchars($row['title']); ?>
-                </option>
-            <?php endwhile; ?>
-        </select>
-        <input type="submit" value="View Details">
+        <label for="search_query">Search by Title (min 3 letters):</label>
+        <input type="text" name="search_query" id="search_query" value="<?php echo htmlspecialchars($search_query); ?>" required>
+        <input type="submit" value="Search">
     </form>
+
+    <?php if (!empty($search_results)): ?>
+        <h2>Search Results</h2>
+        <form method="POST" action="">
+            <table>
+                <tr>
+                    <th>Select</th>
+                    <th>Title</th>
+                </tr>
+                <?php foreach ($search_results as $result): ?>
+                    <tr>
+                        <td>
+                            <input type="radio" name="project_id" value="<?php echo htmlspecialchars($result['id']); ?>" required>
+                        </td>
+                        <td><?php echo htmlspecialchars($result['title']); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </table>
+            <input type="submit" value="View Details">
+        </form>
+    <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && strlen($search_query) >= 3): ?>
+        <p style="color: red;">No projects found matching your search.</p>
+    <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
+        <p style="color: red;">Please enter at least 3 letters to search.</p>
+    <?php endif; ?>
 
     <?php if ($project_details): ?>
         <h2>Project Details</h2>
@@ -103,8 +139,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <td><?php echo htmlspecialchars($project_details['funding']); ?></td>
             </tr>
         </table>
-    <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
-        <p style="color: red;">No details found for the selected project.</p>
     <?php endif; ?>
 </body>
 </html>

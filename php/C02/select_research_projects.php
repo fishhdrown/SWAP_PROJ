@@ -2,6 +2,37 @@
 <html>
 <head>
     <title>Research Projects</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            margin: 20px auto;
+            background-color: turquoise;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 15px;
+            text-align: center;
+        }
+        th {
+            background-color: #e0f7fa;
+        }
+        td {
+            word-wrap: break-word;
+            max-width: 200px;
+        }
+        a {
+            text-decoration: none;
+            color: blue;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
 
@@ -57,11 +88,10 @@ $query = "SELECT * FROM research_projects";
 $result = mysqli_query($con, $query);
 
 if ($result) {
-    echo '<table border="1" bgcolor="turquoise" align="center">';
-    echo '<tr><th>ID</th><th>Title</th><th>Description</th><th>Funding</th><th colspan="2">UPDATE</th></tr>';
+    echo '<table>'; // Updated styles apply here
+    echo '<tr><th>Title</th><th>Description</th><th>Funding</th><th>Update</th><th>Delete</th></tr>';
     while ($row = mysqli_fetch_assoc($result)) {
         echo '<tr>';
-        // echo '<td>' . $row['id'] . '</td>';
         echo '<td>' . $row['title'] . '</td>';
         echo '<td>' . $row['description'] . '</td>';
         echo '<td>' . $row['funding'] . '</td>';

@@ -59,91 +59,86 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['project_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Research Projects</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        input[type="text"], input[type="submit"] {
-            padding: 5px;
-            margin: 10px 0;
-        }
-        table {
-            width: 50%;
-            margin: 20px auto;
-            border-collapse: collapse;
-            border: 1px solid #ddd;
-            background-color: #f9f9f9;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+    <title>Research Projects Database</title>
+    <link rel="stylesheet" href="http://localhost/SWAP_PROJ/css/C02_read.css">
 </head>
 <body>
-    <h1>Search Research Projects</h1>
-    <form method="POST" action="">
-        <label for="search_query">Search by Title (min 3 letters):</label>
-        <input type="text" name="search_query" id="search_query" value="<?php echo htmlspecialchars($search_query); ?>" required>
-        <input type="submit" value="Search">
-    </form>
+    <div class="container">
+        <h1>Research Projects Database</h1>
+        
+        <div class="search-form">
+            <form method="POST" action="">
+                <label for="search_query">Search Projects</label>
+                <input type="text" 
+                       name="search_query" 
+                       id="search_query" 
+                       value="<?php echo htmlspecialchars($search_query); ?>" 
+                       placeholder="Enter at least 3 characters to search..."
+                       required>
+                <input type="submit" value="Search Projects">
+            </form>
+        </div>
 
-    <?php if (!empty($search_results)): ?>
-        <h2>Search Results</h2>
-        <form method="POST" action="">
-            <table>
-                <tr>
-                    <th>Select</th>
-                    <th>Title</th>
-                </tr>
-                <?php foreach ($search_results as $result): ?>
+        <?php if (!empty($search_results)): ?>
+            <div class="results-container">
+                <h2>Search Results</h2>
+                <form method="POST" action="">
+                    <div class="results-list">
+                        <?php foreach ($search_results as $result): ?>
+                            <div class="radio-input">
+                                <!-- Input for the radio button -->
+                                <input type="radio" 
+                                    id="radio_<?php echo $result['id']; ?>" 
+                                    name="project_id" 
+                                    value="<?php echo htmlspecialchars($result['id']); ?>" 
+                                    required
+                                    class="radio-btn">
+                                
+                                <!-- Custom Circle for the radio button -->
+                                <div class="circle"></div>
+                                
+                                <!-- Label associated with the radio button -->
+                                <label for="radio_<?php echo $result['id']; ?>">
+                                    <?php echo htmlspecialchars($result['title']); ?>
+                                </label>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <input type="submit" value="View Details" style="margin-top: 20px;">
+                </form>
+            </div>
+        <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && strlen($search_query) >= 3): ?>
+            <p class="error-message">No projects found matching your search.</p>
+        <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
+            <p class="error-message">Please enter at least 3 letters to search.</p>
+        <?php endif; ?>
+
+
+        <?php if ($project_details): ?>
+            <div class="project-details">
+                <h2>Project Details</h2>
+                <table>
                     <tr>
-                        <td>
-                            <input type="radio" name="project_id" value="<?php echo htmlspecialchars($result['id']); ?>" required>
-                        </td>
-                        <td><?php echo htmlspecialchars($result['title']); ?></td>
+                        <th>ID</th>
+                        <td><?php echo htmlspecialchars($project_details['id']); ?></td>
                     </tr>
-                <?php endforeach; ?>
-            </table>
-            <input type="submit" value="View Details">
-        </form>
-    <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && strlen($search_query) >= 3): ?>
-        <p style="color: red;">No projects found matching your search.</p>
-    <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
-        <p style="color: red;">Please enter at least 3 letters to search.</p>
-    <?php endif; ?>
-
-    <?php if ($project_details): ?>
-        <h2>Project Details</h2>
-        <table>
-            <tr>
-                <th>ID</th>
-                <td><?php echo htmlspecialchars($project_details['id']); ?></td>
-            </tr>
-            <tr>
-                <th>Title</th>
-                <td><?php echo htmlspecialchars($project_details['title']); ?></td>
-            </tr>
-            <tr>
-                <th>Description</th>
-                <td><?php echo htmlspecialchars($project_details['description']); ?></td>
-            </tr>
-            <tr>
-                <th>Funding</th>
-                <td><?php echo htmlspecialchars($project_details['funding']); ?></td>
-            </tr>
-        </table>
-    <?php endif; ?>
+                    <tr>
+                        <th>Title</th>
+                        <td><?php echo htmlspecialchars($project_details['title']); ?></td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td><?php echo htmlspecialchars($project_details['description']); ?></td>
+                    </tr>
+                    <tr>
+                        <th>Funding</th>
+                        <td><?php echo htmlspecialchars($project_details['funding']); ?></td>
+                    </tr>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
 </body>
 </html>
 
-<?php
-// Close connection
-mysqli_close($con);
-?>
+<?php mysqli_close($con); ?>

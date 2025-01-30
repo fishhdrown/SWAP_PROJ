@@ -70,11 +70,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['project_id'])) {
             <form method="POST" action="">
                 <label for="search_query">Search Projects</label>
                 <input type="text" 
-                       name="search_query" 
-                       id="search_query" 
-                       value="<?php echo htmlspecialchars($search_query); ?>" 
-                       placeholder="Enter at least 3 characters to search..."
-                       required>
+                        name="search_query" 
+                        id="search_query" 
+                        value="<?php echo htmlspecialchars($search_query); ?>" 
+                        placeholder="Enter at least 3 characters to search..."
+                        required>
                 <input type="submit" value="Search Projects">
             </form>
         </div>

@@ -6,7 +6,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
     <link rel="stylesheet" href="../css/navigation.css">
     <style>
         /* Reset default margins and padding */
@@ -106,7 +105,7 @@
 
     <!-- Navigation Bar -->
     <div class="navbar">
-        <h2>Research Dashboard</h2>
+        <h2>AMC Corporation Research</h2>
         <ul class="menu">
             <!-- Researcher Profiles Dropdown -->
             <li class="dropdown">

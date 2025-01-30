@@ -19,7 +19,7 @@ $project_details = null;
 
 // Handle search form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search_query'])) {
-    $search_query = filter_var($_POST['search_query'], FILTER_SANITIZE_STRING);
+    $search_query = filter_var($_POST['search_query']);
 
     if (strlen($search_query) >= 3) {
         $search_stmt = $con->prepare("SELECT id, title FROM research_projects WHERE title LIKE ?");
@@ -59,12 +59,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['project_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Research Projects Database</title>
     <link rel="stylesheet" href="http://localhost/SWAP_PROJ/css/C02_read.css">
 </head>
 <body>
+    
+    <?php include('../navigation.php'); ?>
+
     <div class="container">
-        <h1>Research Projects Database</h1>
+        <h1>Search Research Projects</h1>
         
         <div class="search-form">
             <form method="POST" action="">
@@ -75,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['project_id'])) {
                         value="<?php echo htmlspecialchars($search_query); ?>" 
                         placeholder="Enter at least 3 characters to search..."
                         required>
-                <input type="submit" value="Search Projects">
+                <input type="submit" value="Search Projects" class="view-details-btn">
             </form>
         </div>
 
@@ -86,25 +88,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['project_id'])) {
                     <div class="results-list">
                         <?php foreach ($search_results as $result): ?>
                             <div class="radio-input">
-                                <!-- Input for the radio button -->
                                 <input type="radio" 
                                     id="radio_<?php echo $result['id']; ?>" 
                                     name="project_id" 
                                     value="<?php echo htmlspecialchars($result['id']); ?>" 
                                     required
                                     class="radio-btn">
-                                
-                                <!-- Custom Circle for the radio button -->
                                 <div class="circle"></div>
-                                
-                                <!-- Label associated with the radio button -->
                                 <label for="radio_<?php echo $result['id']; ?>">
                                     <?php echo htmlspecialchars($result['title']); ?>
                                 </label>
                             </div>
                         <?php endforeach; ?>
                     </div>
-                    <input type="submit" value="View Details" style="margin-top: 20px;">
+                    <input type="submit" value="View Details"> <!-- Apply class here -->
                 </form>
             </div>
         <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && strlen($search_query) >= 3): ?>
@@ -113,15 +110,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['project_id'])) {
             <p class="error-message">Please enter at least 3 letters to search.</p>
         <?php endif; ?>
 
-
         <?php if ($project_details): ?>
             <div class="project-details">
                 <h2>Project Details</h2>
                 <table>
-                    <tr>
-                        <th>ID</th>
-                        <td><?php echo htmlspecialchars($project_details['id']); ?></td>
-                    </tr>
                     <tr>
                         <th>Title</th>
                         <td><?php echo htmlspecialchars($project_details['title']); ?></td>
@@ -131,13 +123,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['project_id'])) {
                         <td><?php echo htmlspecialchars($project_details['description']); ?></td>
                     </tr>
                     <tr>
-                        <th>Funding</th>
+                        <th>Fundings (in $)</th>
                         <td><?php echo htmlspecialchars($project_details['funding']); ?></td>
                     </tr>
                 </table>
             </div>
         <?php endif; ?>
     </div>
+
 </body>
 </html>
 

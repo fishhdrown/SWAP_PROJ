@@ -1,112 +1,113 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Research Projects</title>
+    <link rel="stylesheet" href="http://localhost/SWAP_PROJ/css/C02_read.css"> <!-- Link to the external CSS -->
     <style>
+        /* General body styling */
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding: 0;
         }
-        table {
-            border-collapse: collapse;
-            width: 80%;
-            margin: 20px auto;
-            background-color: turquoise;
+
+        /* Container to add margin-top to avoid overlap with navbar */
+        .container {
+            margin-top: 80px; /* Adjust based on your navbar height (e.g., 60px for navbar) */
+            padding: 20px;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 15px;
+
+        h1 {
             text-align: center;
+            margin-bottom: 20px;
         }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: #f9f9f9;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
         th {
-            background-color: #e0f7fa;
+            background-color: #f2f2f2;
         }
+
         td {
             word-wrap: break-word;
             max-width: 200px;
         }
+
         a {
             text-decoration: none;
             color: blue;
         }
+
         a:hover {
             text-decoration: underline;
         }
+
+        /* Navigation bar styling can be customized in the navigation.php file */
     </style>
 </head>
 <body>
 
-<?php
-// Database connection credentials
-$dbHost = 'localhost';
-$dbUser = 'admin';
-$dbPass = 'admin';
-$dbName = 'project_swap';
+    <?php include('../navigation.php'); ?> <!-- Include the navigation bar -->
 
-// Connect to database
-$con = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
+    <div class="container">
+        <h1>Editing Research Projects</h1>
 
-// Check connection
-if (!$con) {
-    die('Could not connect: ' . mysqli_connect_error()); // Return error if connection fails
-}
+        <!-- Display research projects in a table -->
+        <?php
+        // Database connection credentials
+        $dbHost = 'localhost';
+        $dbUser = 'admin';
+        $dbPass = 'admin';
+        $dbName = 'project_swap';
 
-// Check if the form was submitted
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Collect and sanitize input data from the form
-    $in_title = htmlspecialchars($_POST["in_title"]);
-    $in_description = htmlspecialchars($_POST["in_description"]);
-    $in_funding = intval($_POST["in_funding"]); // Ensure funding is an integer
+        // Connect to database
+        $con = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
 
-    // Prepare SQL query using a prepared statement to prevent SQL injection
-    $stmt = $con->prepare("INSERT INTO research_projects (title, description, funding) VALUES (?, ?, ?)");
+        // Check connection
+        if (!$con) {
+            die('Could not connect: ' . mysqli_connect_error());
+        }
 
-    // Check if the statement was prepared correctly
-    if ($stmt === false) {
-        die('Prepare failed: ' . $con->error);
-    }
+        // Fetch and display data from the database
+        $query = "SELECT * FROM research_projects";
+        $result = mysqli_query($con, $query);
 
-    // Bind parameters to the SQL statement
-    // 's' stands for string, 'i' stands for integer
-    $stmt->bind_param('ssi', $in_title, $in_description, $in_funding);
+        if ($result) {
+            echo '<table>';
+            echo '<tr><th>Title</th><th>Description</th><th>Fundings (in $)</th><th>Update</th><th>Delete</th></tr>';
+            while ($row = mysqli_fetch_assoc($result)) {
+                echo '<tr>';
+                echo '<td>' . htmlspecialchars($row['title']) . '</td>';
+                echo '<td>' . htmlspecialchars($row['description']) . '</td>';
+                echo '<td>' . htmlspecialchars($row['funding']) . '</td>';
+                echo '<td><a href="update_research_projects.php?id=' . $row['id'] . '">Edit</a></td>';  // Update link
+                echo '<td><a href="delete_research_projects.php?id=' . $row['id'] . '">Delete</a></td>'; // Delete link
+                echo '</tr>';
+            }
+            echo '</table>';
+        } else {
+            echo "Error fetching data: " . mysqli_error($con);
+        }
 
-    // Execute the query and check if the insert was successful
-    if ($stmt->execute()) {
-        echo "Insert Query executed successfully.";
-        header("Location: select_research_projects.php"); // Redirect to another page after success
-        exit; // Ensure no further code is executed after the redirect
-    } else {
-        echo "Error executing INSERT query: " . $stmt->error;
-    }
-
-    // Close the prepared statement
-    $stmt->close();
-}
-
-// Fetch and display data from the database
-$query = "SELECT * FROM research_projects";
-$result = mysqli_query($con, $query);
-
-if ($result) {
-    echo '<table>'; // Updated styles apply here
-    echo '<tr><th>Title</th><th>Description</th><th>Funding</th><th>Update</th><th>Delete</th></tr>';
-    while ($row = mysqli_fetch_assoc($result)) {
-        echo '<tr>';
-        echo '<td>' . $row['title'] . '</td>';
-        echo '<td>' . $row['description'] . '</td>';
-        echo '<td>' . $row['funding'] . '</td>';
-        echo '<td><a href="update_research_projects.php?id=' . $row['id'] . '">Edit</a></td>';  // Update link
-        echo '<td><a href="delete_research_projects.php?id=' . $row['id'] . '">Delete</a></td>'; // Delete link
-        echo '</tr>';
-    }
-    echo '</table>';
-} else {
-    echo "Error fetching data: " . mysqli_error($con);
-}
-
-// Close SQL connection
-mysqli_close($con);
-?>
+        // Close SQL connection
+        mysqli_close($con);
+        ?>
+    </div>
 
 </body>
 </html>

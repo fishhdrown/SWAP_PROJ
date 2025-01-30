@@ -75,71 +75,134 @@ $result = $stmt->get_result();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Update Form</title>
+    <title>Update Research Project</title>
+    <link rel="stylesheet" href="http://localhost/SWAP_PROJ/css/C02_read.css"> <!-- Link to the external CSS -->
     <style>
-        th {
-            text-align: left;
-            padding-right: 10px;
+        /* General body styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
+
+        /* Container to add margin-top to avoid overlap with navbar */
+        .container {
+            margin-top: 80px; /* Adjust based on your navbar height */
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: #f9f9f9;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        td {
+            word-wrap: break-word;
+            max-width: 200px;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        input[type="submit"], input[type="button"] {
+            padding: 10px 15px;
+            margin-top: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover, input[type="button"]:hover {
+            background-color: #45a049;
+        }
+
         .error {
             color: red;
         }
+
         .success {
             color: green;
         }
-        table {
-            margin: 20px auto;
-            padding: 10px;
-            background-color: #fdfd96;
+
+        a {
+            text-decoration: none;
+            color: blue;
         }
-        input[type="text"], input[type="number"] {
-            width: 100%;
-            padding: 5px;
-        }
-        input[type="submit"], input[type="button"] {
-            padding: 5px 10px;
-            margin-top: 10px;
+
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <?php if ($result->num_rows > 0): ?>
-        <?php $row = $result->fetch_assoc(); ?>
-        <form action="update_research_projects.php?id=<?php echo htmlspecialchars($edit_id); ?>" method="POST">
-            <table border="0">
-                <tr>
-                    <th>ID</th>
-                    <td><?php echo htmlspecialchars($row['id']); ?></td>
-                </tr>
-                <tr>
-                    <th>Title</th>
-                    <td>
-                        <input type="text" name="upd_title" value="<?php echo htmlspecialchars($row['title']); ?>" required>
-                    </td>
-                </tr>
-                <tr>
-                    <th>Description</th>
-                    <td>
-                        <input type="text" name="upd_description" value="<?php echo htmlspecialchars($row['description']); ?>" required>
-                    </td>
-                </tr>
-                <tr>
-                    <th>Funding</th>
-                    <td>
-                        <input type="number" name="upd_funding" value="<?php echo htmlspecialchars($row['funding']); ?>" required>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2" align="right">
-                        <input type="submit" value="Update Record">
-                        <input type="button" value="Cancel" onclick="window.location.href='select_research_projects.php'">
-                    </td>
-                </tr>
-            </table>
-        </form>
-    <?php else: ?>
-        <p class="error">Record not found.</p>
-    <?php endif; ?>
+
+    <!-- Include the navigation bar -->
+    <?php include('../navigation.php'); ?> <!-- Include the navigation bar -->
+
+    <div class="container">
+        <h1>Editing Research Project</h1>
+
+        <?php if ($result->num_rows > 0): ?>
+            <?php $row = $result->fetch_assoc(); ?>
+            <form action="update_research_projects.php?id=<?php echo htmlspecialchars($edit_id); ?>" method="POST">
+                <table border="0">
+                    <tr>
+                        <th>Title</th>
+                        <td>
+                            <input type="text" name="upd_title" value="<?php echo htmlspecialchars($row['title']); ?>" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>
+                            <input type="text" name="upd_description" value="<?php echo htmlspecialchars($row['description']); ?>" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Funding (in $)</th>
+                        <td>
+                            <input type="number" name="upd_funding" value="<?php echo htmlspecialchars($row['funding']); ?>" required>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" align="right">
+                            <input type="submit" value="Update Record">
+                            <input type="button" value="Cancel" onclick="window.location.href='select_research_projects.php'">
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        <?php else: ?>
+            <p class="error">Record not found.</p>
+        <?php endif; ?>
+    </div>
+
 </body>
 </html>
 

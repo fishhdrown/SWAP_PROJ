@@ -10,23 +10,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Connect to the database
     $conn = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 
-    // Check connection (seriously, no errors pls :') )
+    // Check connection
     if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);  // If connection fails, no data, no fun :(
+        die("Connection failed: " . $conn->connect_error);
     }
 
-    // Retrieve form data [getting those user inputs >:)) ]
-    $in_title = htmlspecialchars($_POST['in_title']);       // Sanitize the project title
-    $in_description = htmlspecialchars($_POST['in_description']);  // Sanitize the project description
-    $in_funding = htmlspecialchars($_POST['in_funding']);         // Sanitize the funding amount
+    // Retrieve form data
+    $in_title = htmlspecialchars($_POST['in_title']);
+    $in_description = htmlspecialchars($_POST['in_description']);
+    $in_funding = htmlspecialchars($_POST['in_funding']);
 
     // Input validation
     if (empty($in_title) || empty($in_description) || empty($in_funding)) {
-        // Popup error message if fields are empty
         echo "
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
-                    alert('All fields are required!');  // Simple alert for missing input
+                    alert('All fields are required!');
                 });
             </script>
         ";
@@ -40,7 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $check_query->close();
 
         if ($title_count > 0) {
-            // Alert user if title already exists
             echo "
                 <script>
                     document.addEventListener('DOMContentLoaded', function () {
@@ -49,29 +47,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </script>
             ";
         } else {
-            // Prepare SQL statement to insert data into the database
+            // Insert project
             $stmt = $conn->prepare("INSERT INTO research_projects (`title`, `description`, `funding`) VALUES (?, ?, ?)");
 
             if ($stmt) {
-                // Bind parameters to the statement (bind values for each placeholder)
-                $stmt->bind_param('ssi', $in_title, $in_description, $in_funding); 
-
-                // Execute the statement
+                $stmt->bind_param('ssi', $in_title, $in_description, $in_funding);
                 if ($stmt->execute()) {
                     echo "<script>
                             document.addEventListener('DOMContentLoaded', function () {
                                 alert('Project inserted successfully!');
                             });
-                          </script>";
+                            </script>";
                 } else {
                     echo "<script>
                             document.addEventListener('DOMContentLoaded', function () {
                                 alert('Error inserting data.');
                             });
-                          </script>";
+                            </script>";
                 }
-
-                // Close the statement
                 $stmt->close();
             } else {
                 echo "Error preparing the SQL statement.";
@@ -79,7 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Close the database connection
     $conn->close();
 }
 ?>
@@ -89,52 +81,106 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Insert Research Project</title>
+    <link rel="stylesheet" href="http://localhost/SWAP_PROJ/css/C02_read.css">
     <style>
+        /* Adjust for margin-top to prevent overlap with fixed navbar */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            margin-top: 80px; /* Adjust based on your navbar height (60px) + padding */
+            padding: 20px;
+        }
+
         #title {
             text-align: center;
         }
+
         table {
-            border: 1px solid #000;
-            border-collapse: collapse;
+            width: 100%;
+            max-width: 600px;
             margin: 20px auto;
+            border-collapse: collapse;
         }
+
         th, td {
             padding: 10px;
-            text-align: center;
+            text-align: left;
         }
+
         th {
             background-color: #f2f2f2;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .form-title {
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .error-message {
+            color: red;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
-<!-- Page Title -->
-<h3 id="title">Insert Research Project</h3>
+    <?php include('../navigation.php'); ?> <!-- Include the navigation bar -->
 
-<!-- Form to insert a new research project -->
-<form action="" method="POST">
-    <table align="center">
-        <tr>
-            <td>Title:</td>
-            <td><input type="text" name="in_title" required></td>
-        </tr>
-        <tr>
-            <td>Description:</td>
-            <td><input type="text" name="in_description" required></td>
-        </tr>
-        <tr>
-            <td>Funding:</td>
-            <td><input type="number" name="in_funding" required></td>
-        </tr>
-        <tr>
-            <td colspan="2" align="center">
+    <div class="container">
+        <!-- Page Title -->
+        <h1 class="form-title">New Research Project</h1>
+
+        <!-- Form to insert a new research project -->
+        <form action="" method="POST">
+            <div class="form-group">
+                <label for="in_title">Title:</label>
+                <input type="text" name="in_title" id="in_title" required>
+            </div>
+
+            <div class="form-group">
+                <label for="in_description">Description:</label>
+                <input type="text" name="in_description" id="in_description" required>
+            </div>
+
+            <div class="form-group">
+                <label for="in_funding">Fundings (in $):</label>
+                <input type="number" name="in_funding" id="in_funding" required>
+            </div>
+
+            <div class="form-group">
                 <input type="submit" value="Insert Record">
-            </td>
-        </tr>
-    </table>
-</form>
+            </div>
+        </form>
+
+        <!-- Error or success message -->
+        <?php if ($_SERVER['REQUEST_METHOD'] === 'POST' && (empty($in_title) || empty($in_description) || empty($in_funding))): ?>
+            <p class="error-message">Please fill in all fields before submitting.</p>
+        <?php endif; ?>
+    </div>
 
 </body>
 </html>

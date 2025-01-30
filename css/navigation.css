@@ -1,0 +1,100 @@
+/* Reset styles to remove default margins and paddings */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Navigation Bar at the Top */
+.navbar {
+    width: 100%;
+    background-color: #333; /* Dark background color for the navbar */
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    position: fixed; /* Fixes navbar at the top */
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+/* Navbar Title (Green text) */
+.navbar h2 {
+    font-size: 22px;
+    color: #4CAF50; /* Green text for the navbar title */
+}
+
+/* Menu container */
+.menu {
+    list-style-type: none;
+    display: flex;
+    gap: 20px;
+}
+
+/* Menu Items */
+.menu li {
+    position: relative;
+    padding: 10px;
+    cursor: pointer;
+}
+
+/* Links (Green text for links) */
+.menu a {
+    text-decoration: none;
+    color: #4CAF50; /* Green text for the navbar links */
+    font-size: 16px;
+    display: block;
+    padding: 10px 15px;
+}
+
+/* Dropdown Menu */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #444; /* Dark gray for dropdown background */
+    min-width: 180px;
+    top: 100%;
+    left: 0;
+    border-radius: 5px;
+    z-index: 999;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Dropdown Items */
+.dropdown-content li {
+    width: 100%;
+}
+
+/* Dropdown Links (Keep them white for contrast) */
+.dropdown-content a {
+    color: white;
+    padding: 10px;
+    display: block;
+    transition: background-color 0.3s ease;
+}
+
+/* Hover Effects */
+.dropdown-content a:hover {
+    background-color: #555;
+}
+
+/* Ensure the dropdown stays open when hovering */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Main Content */
+.main-content {
+    text-align: center;
+    margin-top: 80px; /* Prevents overlap with navbar */
+    padding: 20px;
+    background-color: #f4f4f4;
+    min-height: 100vh;
+}
+
+/* Headers and Subheaders (Green text) */
+h1, h2, h3, h4, h5, h6 {
+    color: #4CAF50; /* Green text for headers */
+}

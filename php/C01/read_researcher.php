@@ -1,26 +1,76 @@
-<html>
+<?php
+$dbHost = 'localhost';
+$dbUser = 'admin';
+$dbPass = 'admin';
+$dbName = 'project_swap';
+
+// Connect to database
+$con = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
+if (!$con) {
+    die('Could not connect: ' . mysqli_connect_error());
+}
+
+// Fetch researcher profiles
+$stmt = $con->prepare("SELECT * FROM researcher_profiles");
+$stmt->execute();
+$result = $stmt->get_result();
+$stmt->close();
+?>
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Researcher Profiles</title>
+    <link rel="stylesheet" href="../css/navigation.css">
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding-top: 140px; /* Ensure padding accounts for the navbar height */
+            background-color: #ffffff;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px; /* Reduced spacing between header and table */
+            color: #4CAF50;
+            padding: 15px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .header-container {
+            text-align: center;
+            margin-top: 120px;
+            margin-bottom: 20px; /* Adjusted margin for better spacing */
+        }
         table {
             width: 80%;
-            margin: auto;
+            margin: auto; /* Center table horizontally */
+            margin-top: 12px; /* Added margin-top to lower the table */
             border-collapse: collapse;
+            background-color: white;
+            color: #333;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
         }
         th, td {
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
             text-align: center;
         }
         th {
-            background-color: #f2f2f2;
+            background-color: #4CAF50;
+            color: white;
         }
         .button-container {
             text-align: center;
             margin-top: 20px;
         }
         button {
-            background-color: #4CAF50; /* Green */
+            background-color: #4CAF50;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -34,46 +84,37 @@
     </style>
 </head>
 <body>
- 
-<h2>Researcher Profiles</h2>
- 
-<?php
-// Database connection
-$con = mysqli_connect("localhost", "admin", "admin", "project_swap");
-if (!$con) {
-    die('Database connection failed: ' . mysqli_connect_error());
-}
- 
-$stmt = $con->prepare("SELECT * FROM researcher_profiles");
-$stmt->execute();
-$result = $stmt->get_result();
- 
-// Display the records
-echo '<table>';
-echo '<tr><th>ID</th><th>Name</th><th>Email</th><th>Expertise ID</th><th>Assigned Projects ID</th></tr>';
- 
-while ($row = $result->fetch_assoc()) {
-    echo '<tr>';
-    echo '<td>' . $row['id'] . '</td>';
-    echo '<td>' . $row['name'] . '</td>';
-    echo '<td>' . $row['email'] . '</td>';
-    echo '<td>' . $row['expertise_id'] . '</td>';
-    echo '<td>' . $row['assigned_projects_id'] . '</td>';
-    echo '</tr>';
-}
- 
-echo '</table>';
- 
-$stmt->close();
-$con->close();
-?>
- 
-<div class="button-container">
-    <!-- Back button to return to Insert Researcher page -->
-    <a href="insert_researcher.php">
-        <button>Back</button>
-    </a>
-</div>
- 
+    <?php include('../navigation.php'); ?>
+    
+    <div class="header-container">
+        <h1>Researcher Profiles</h1>
+    </div>
+    
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Expertise ID</th>
+            <th>Assigned Projects ID</th>
+            <th>Actions</th>
+        </tr>
+        <?php while ($row = $result->fetch_assoc()): ?>
+            <tr>
+                <td><?php echo htmlspecialchars($row['id']); ?></td>
+                <td><?php echo htmlspecialchars($row['name']); ?></td>
+                <td><?php echo htmlspecialchars($row['email']); ?></td>
+                <td><?php echo htmlspecialchars($row['expertise_id']); ?></td>
+                <td><?php echo htmlspecialchars($row['assigned_projects_id']); ?></td>
+                <td>
+                    <a href="select_researcher.php?id=<?php echo $row['id']; ?>">
+                        <button>Edit</button>
+                    </a>
+                </td>
+            </tr>
+        <?php endwhile; ?>
+    </table>
+    
 </body>
 </html>
+<?php mysqli_close($con); ?>

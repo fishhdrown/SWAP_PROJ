@@ -111,8 +111,8 @@
             <li class="dropdown">
                 <a href="#">Researcher Profiles</a>
                 <ul class="dropdown-content">
-                    <li><a href="#">View Profiles</a></li>
-                    <li><a href="#">Add Profile</a></li>
+                    <li><a href="/SWAP_PROJ/php/C01/read_researcher.php">View Profiles</a></li>
+                    <li><a href="/SWAP_PROJ/php/C01/insert_researcher.php">Add Profile</a></li>
                 </ul>
             </li>
             

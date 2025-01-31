@@ -1,110 +1,126 @@
-<html>
-<head>
-    <title>Insert New Researcher</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        form {
-            width: 50%;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        input[type="text"], input[type="submit"], button {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        input[type="submit"] {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        input[type="submit"]:hover {
-            background-color: #45a049;
-        }
-        button {
-            background-color: #008CBA; /* Blue */
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #007B9A;
-        }
-        .button-container {
-            text-align: center;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
- 
-<h2>Insert New Researcher</h2>
- 
 <?php
-// Database connection
-$con = mysqli_connect("localhost", "admin", "admin", "project_swap");
+$dbHost = 'localhost';
+$dbUser = 'admin';
+$dbPass = 'admin';
+$dbName = 'project_swap';
+
+// Connect to database
+$con = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
 if (!$con) {
-    die('Database connection failed: ' . mysqli_connect_error());
+    die('Could not connect: ' . mysqli_connect_error());
 }
- 
+
+$success_message = "";
+$error_message = "";
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = htmlspecialchars(trim($_POST['name']));
     $email = htmlspecialchars(trim($_POST['email']));
     $expertise_id = intval($_POST['expertise_id']);
     $assigned_projects_id = intval($_POST['assigned_projects_id']);
- 
-    // Insert query
+
     $stmt = $con->prepare("INSERT INTO researcher_profiles (name, email, expertise_id, assigned_projects_id) VALUES (?, ?, ?, ?)");
     $stmt->bind_param('ssii', $name, $email, $expertise_id, $assigned_projects_id);
- 
+
     if ($stmt->execute()) {
-        echo "<p>Record inserted successfully.</p>";
-        header("Location: select_researcher.php"); // Redirect after insertion
-        exit();
+        $success_message = "Profile inserted successfully.";
     } else {
-        echo "<p>Error inserting record: " . $stmt->error . "</p>";
+        $error_message = "Error inserting profile: " . $stmt->error;
     }
- 
+
     $stmt->close();
 }
 ?>
- 
-<form action="insert_researcher.php" method="POST">
-    <label for="name">Name:</label>
-    <input type="text" name="name" id="name" required><br>
- 
-    <label for="email">Email:</label>
-    <input type="text" name="email" id="email" required><br>
- 
-    <label for="expertise_id">Expertise ID:</label>
-    <input type="text" name="expertise_id" id="expertise_id" required><br>
- 
-    <label for="assigned_projects_id">Assigned Projects ID:</label>
-    <input type="text" name="assigned_projects_id" id="assigned_projects_id" required><br>
- 
-    <input type="submit" value="Insert Record">
-</form>
- 
-<div class="button-container">
-    <!-- View Researchers button -->
-    <a href="read_researcher.php">
-        <button>View Researchers</button>
-    </a>
-    <!-- Edit Researchers button -->
-    <a href="select_researcher.php">
-        <button>Edit Researchers</button>
-    </a>
-</div>
- 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insert New Researcher</title>
+    <link rel="stylesheet" href="../css/navigation.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding-top: 140px;
+            background-color: #ffffff;
+            color: #333;
+        }
+        .container {
+            width: 50%;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        label {
+            font-weight: bold;
+        }
+        input[type="text"], input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .success-message, .error-message {
+            text-align: center;
+            font-weight: bold;
+        }
+        .success-message {
+            color: green;
+        }
+        .error-message {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <?php include('../navigation.php'); ?>
+
+    <div class="container">
+        <h1>Insert New Profile</h1>
+        <?php if ($success_message): ?>
+            <p class="success-message"><?php echo $success_message; ?></p>
+        <?php endif; ?>
+        <?php if ($error_message): ?>
+            <p class="error-message"><?php echo $error_message; ?></p>
+        <?php endif; ?>
+        <form action="insert_researcher.php" method="POST">
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" required>
+
+            <label for="email">Email:</label>
+            <input type="text" name="email" id="email" required>
+
+            <label for="expertise_id">Expertise ID:</label>
+            <input type="text" name="expertise_id" id="expertise_id" required>
+
+            <label for="assigned_projects_id">Assigned Projects ID:</label>
+            <input type="text" name="assigned_projects_id" id="assigned_projects_id" required>
+
+            <input type="submit" value="Insert Record">
+        </form>
+    </div>
 </body>
 </html>
+
+<?php mysqli_close($con); ?>

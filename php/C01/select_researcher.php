@@ -1,23 +1,69 @@
-<html>
+<?php
+$dbHost = 'localhost';
+$dbUser = 'admin';
+$dbPass = 'admin';
+$dbName = 'project_swap';
+
+// Connect to database
+$con = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
+if (!$con) {
+    die('Could not connect: ' . mysqli_connect_error());
+}
+
+// Fetch researcher profiles
+$stmt = $con->prepare("SELECT * FROM researcher_profiles");
+$stmt->execute();
+$result = $stmt->get_result();
+$stmt->close();
+?>
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Researcher Profiles</title>
+    <link rel="stylesheet" href="../css/navigation.css">
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding-top: 140px;
+            background-color: #ffffff;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #4CAF50;
+            padding: 15px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .header-container {
+            text-align: center;
+            margin-top: 120px;
+            margin-bottom: 20px;
+        }
         table {
             width: 80%;
             margin: auto;
+            margin-top: 12px;
             border-collapse: collapse;
+            background-color: white;
+            color: #333;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
         }
         th, td {
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
             text-align: center;
         }
         th {
-            background-color: #f2f2f2;
-        }
-        #button-container {
-            text-align: center;
-            margin-top: 20px;
+            background-color: #4CAF50;
+            color: white;
         }
         .action-buttons {
             display: flex;
@@ -32,75 +78,58 @@
             border-radius: 5px;
             transition: background-color 0.3s, transform 0.2s;
         }
-        .action-buttons button.edit {
-            background-color: #4CAF50; /* Green */
+        .action-buttons .edit {
+            background-color: #4CAF50;
             color: white;
         }
-        .action-buttons button.edit:hover {
+        .action-buttons .edit:hover {
             background-color: #45a049;
             transform: scale(1.05);
         }
-        .action-buttons button.delete {
-            background-color: #f44336; /* Red */
+        .action-buttons .delete {
+            background-color: #f44336;
             color: white;
         }
-        .action-buttons button.delete:hover {
+        .action-buttons .delete:hover {
             background-color: #e53935;
             transform: scale(1.05);
-        }
-        .action-buttons button:focus {
-            outline: none;
         }
     </style>
 </head>
 <body>
- 
-<h3 id="title">Researcher Profiles</h3>
- 
-<?php
-// Connect to the database
-$con = mysqli_connect("localhost", "admin", "admin", "project_swap");
-if (!$con) {
-    die('Could not connect: ' . mysqli_connect_errno()); // Return error if connection fails
-}
- 
-// Prepare and execute query to fetch all records
-$stmt = $con->prepare("SELECT * FROM researcher_profiles");
-$stmt->execute();
-$result = $stmt->get_result();
- 
-// Display records in a table
-echo '<table>';
-echo '<tr><th>ID</th><th>Name</th><th>Email</th><th>Expertise ID</th><th>Assigned Projects ID</th><th>Actions</th></tr>';
- 
-while ($row = $result->fetch_assoc()) {
-    echo '<tr>';
-    echo '<td>' . $row['id'] . '</td>';
-    echo '<td>' . $row['name'] . '</td>';
-    echo '<td>' . $row['email'] . '</td>';
-    echo '<td>' . $row['expertise_id'] . '</td>';
-    echo '<td>' . $row['assigned_projects_id'] . '</td>';
-    echo '<td class="action-buttons">';
-    // Edit Button
-    echo '<a href="update_researcher.php?item_id=' . $row['id'] . '"><button class="edit">Edit</button></a> ';
-    // Delete Button
-    echo '<a href="delete_researcher.php?item_id=' . $row['id'] . '" onclick="return confirm(\'Are you sure you want to delete this researcher?\');"><button class="delete">Delete</button></a>';
-    echo '</td>';
-    echo '</tr>';
-}
- 
-echo '</table>';
- 
-$stmt->close();
-$con->close();
-?>
- 
-<!-- Button to navigate to insert_researcher.php -->
-<div id="button-container">
-    <a href="insert_researcher.php">
-        <button>Add More Researchers</button>
-    </a>
-</div>
- 
+    <?php include('../navigation.php'); ?>
+    
+    <div class="header-container">
+        <h1>Researcher Profiles</h1>
+    </div>
+    
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Expertise ID</th>
+            <th>Assigned Projects ID</th>
+            <th>Actions</th>
+        </tr>
+        <?php while ($row = $result->fetch_assoc()): ?>
+            <tr>
+                <td><?php echo htmlspecialchars($row['id']); ?></td>
+                <td><?php echo htmlspecialchars($row['name']); ?></td>
+                <td><?php echo htmlspecialchars($row['email']); ?></td>
+                <td><?php echo htmlspecialchars($row['expertise_id']); ?></td>
+                <td><?php echo htmlspecialchars($row['assigned_projects_id']); ?></td>
+                <td class="action-buttons">
+                    <a href="update_researcher.php?item_id=<?php echo $row['id']; ?>">
+                        <button class="edit">Edit</button>
+                    </a>
+                    <a href="delete_researcher.php?item_id=<?php echo $row['id']; ?>" onclick="return confirm('Are you sure you want to delete this researcher?');">
+                        <button class="delete">Delete</button>
+                    </a>
+                </td>
+            </tr>
+        <?php endwhile; ?>
+    </table>
 </body>
 </html>
+<?php mysqli_close($con); ?>

@@ -1,67 +1,139 @@
-<html>
-<head>
-    <title>Update Researcher</title>
-</head>
-<body>
- 
-<h2>Update Researcher Profile</h2>
- 
 <?php
-// Database connection
-$con = mysqli_connect("localhost", "admin", "admin", "project_swap");
+$dbHost = 'localhost';
+$dbUser = 'admin';
+$dbPass = 'admin';
+$dbName = 'project_swap';
+
+// Connect to database
+$con = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
 if (!$con) {
-    die('Database connection failed: ' . mysqli_connect_error());
+    die('Could not connect: ' . mysqli_connect_error());
 }
- 
+
+$success_message = "";
+$error_message = "";
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = $_POST['id'];
     $name = htmlspecialchars(trim($_POST['name']));
     $email = htmlspecialchars(trim($_POST['email']));
     $expertise_id = intval($_POST['expertise_id']);
     $assigned_projects_id = intval($_POST['assigned_projects_id']);
- 
-    // Update query
+
     $stmt = $con->prepare("UPDATE researcher_profiles SET name = ?, email = ?, expertise_id = ?, assigned_projects_id = ? WHERE id = ?");
     $stmt->bind_param('ssiii', $name, $email, $expertise_id, $assigned_projects_id, $id);
- 
+
     if ($stmt->execute()) {
-        echo "<p>Record updated successfully.</p>";
-        header("Location: select_researcher.php"); // Redirect to the researcher list page
+        header("Location: select_researcher.php"); // Redirect after update
         exit();
     } else {
-        echo "<p>Error updating record: " . $stmt->error . "</p>";
+        $error_message = "Error updating record: " . $stmt->error;
     }
- 
+
     $stmt->close();
 } else {
     $item_id = isset($_GET['item_id']) ? intval($_GET['item_id']) : 0;
- 
-    // Fetch record to update
+    
     $stmt = $con->prepare("SELECT * FROM researcher_profiles WHERE id = ?");
     $stmt->bind_param("i", $item_id);
     $stmt->execute();
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
- 
+    
     if (!$row) {
         die('Record not found.');
     }
- 
-    // Show update form
-    echo '<form action="update_researcher.php" method="POST">';
-    echo '<input type="hidden" name="id" value="' . $row['id'] . '">';
-    echo 'Name: <input type="text" name="name" value="' . $row['name'] . '" required><br>';
-    echo 'Email: <input type="text" name="email" value="' . $row['email'] . '" required><br>';
-    echo 'Expertise ID: <input type="text" name="expertise_id" value="' . $row['expertise_id'] . '" required><br>';
-    echo 'Assigned Projects ID: <input type="text" name="assigned_projects_id" value="' . $row['assigned_projects_id'] . '" required><br>';
-    echo '<input type="submit" value="Update Record">';
-    echo '</form>';
- 
     $stmt->close();
 }
- 
 $con->close();
 ?>
- 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Researcher</title>
+    <link rel="stylesheet" href="../css/navigation.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding-top: 140px;
+            background-color: #ffffff;
+            color: #333;
+        }
+        .container {
+            width: 50%;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        label {
+            font-weight: bold;
+        }
+        input[type="text"], input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .success-message, .error-message {
+            text-align: center;
+            font-weight: bold;
+        }
+        .success-message {
+            color: green;
+        }
+        .error-message {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <?php include('../navigation.php'); ?>
+
+    <div class="container">
+        <h1>Update Researcher</h1>
+        <?php if ($error_message): ?>
+            <p class="error-message"><?php echo $error_message; ?></p>
+        <?php endif; ?>
+        <form action="update_researcher.php" method="POST">
+            <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+            
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" value="<?php echo $row['name']; ?>" required>
+            
+            <label for="email">Email:</label>
+            <input type="text" name="email" id="email" value="<?php echo $row['email']; ?>" required>
+            
+            <label for="expertise_id">Expertise ID:</label>
+            <input type="text" name="expertise_id" id="expertise_id" value="<?php echo $row['expertise_id']; ?>" required>
+            
+            <label for="assigned_projects_id">Assigned Projects ID:</label>
+            <input type="text" name="assigned_projects_id" id="assigned_projects_id" value="<?php echo $row['assigned_projects_id']; ?>" required>
+            
+            <input type="submit" value="Update Record">
+        </form>
+    </div>
 </body>
 </html>
+

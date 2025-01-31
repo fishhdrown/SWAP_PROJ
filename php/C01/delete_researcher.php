@@ -1,40 +1,34 @@
-<html>
-<head>
-    <title>Delete Researcher</title>
-</head>
-<body>
- 
-<h2>Delete Researcher Profile</h2>
- 
 <?php
-// Database connection
-$con = mysqli_connect("localhost", "admin", "admin", "project_swap");
+$dbHost = 'localhost';
+$dbUser = 'admin';
+$dbPass = 'admin';
+$dbName = 'project_swap';
+
+// Connect to database
+$con = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
 if (!$con) {
-    die('Database connection failed: ' . mysqli_connect_error());
+    die('Could not connect: ' . mysqli_connect_error());
 }
- 
-if (isset($_GET['item_id'])) {
-    $item_id = intval($_GET['item_id']);
- 
-    // Delete query
+
+// Check if ID is provided
+if (isset($_GET['item_id']) && is_numeric($_GET['item_id'])) {
+    $id = intval($_GET['item_id']);
+
+    // Delete researcher record
     $stmt = $con->prepare("DELETE FROM researcher_profiles WHERE id = ?");
-    $stmt->bind_param("i", $item_id);
- 
+    $stmt->bind_param("i", $id);
+
     if ($stmt->execute()) {
-        echo "<p>Profile deleted successfully.</p>";
-        header("Location: select_researcher.php"); // Redirect to the researcher list page
+        header("Location: select_researcher.php"); // Redirect after deletion
         exit();
     } else {
-        echo "<p>Error deleting profile: " . $stmt->error . "</p>";
+        echo "Error deleting record: " . $stmt->error;
     }
- 
+
     $stmt->close();
 } else {
-    echo "<p>No ID provided for deletion.</p>";
+    echo "Invalid request.";
 }
- 
-$con->close();
+
+mysqli_close($con);
 ?>
- 
-</body>
-</html>

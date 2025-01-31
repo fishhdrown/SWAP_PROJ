@@ -1,41 +1,58 @@
 <?php
+// Database credentials
+$dbHost = 'localhost';
+$dbUser = 'admin';
+$dbPass = 'admin';
+$dbName = 'project_swap';
+
+// Connect to database
+$con = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
+
+// Check connection
+if ($con->connect_error) {
+    die('Database connection failed: ' . $con->connect_error);
+}
+
+$success_message = "";
+$error_message = "";
+
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Database credentials
-    $dbHost = 'localhost';  // Server location
-    $dbUser = 'admin';      // Username
-    $dbPass = 'admin';      // Password
-    $dbName = 'project_swap'; // Database name
+    $name = htmlspecialchars(trim($_POST['name']));
+    $email = htmlspecialchars(trim($_POST['email']));
+    $expertise_id = intval($_POST['expertise_id']);
+    $assigned_projects_id = intval($_POST['assigned_projects_id']);
+    $role = htmlspecialchars(trim($_POST['role']));
 
-    // Connect to database
-    $con = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
-    if (!$con) {
-        die('Could not connect: ' . mysqli_connect_error());
-    }
+    // Email validation
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error_message = "Invalid email format.";
+    } else {
+        // Check if the table contains the "role" column
+        $query = "SHOW COLUMNS FROM researcher_profiles LIKE 'role'";
+        $result = $con->query($query);
 
-    $success_message = "";
-    $error_message = "";
-
-    // Handle form submission
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $name = htmlspecialchars(trim($_POST['name']));
-        $email = htmlspecialchars(trim($_POST['email']));
-        $expertise_id = intval($_POST['expertise_id']);
-        $assigned_projects_id = intval($_POST['assigned_projects_id']);
-        $role = htmlspecialchars(trim($_POST['role']));  
-
-        // Prepare and execute the insert query
-        $stmt = $con->prepare("INSERT INTO researcher_profiles (name, email, expertise_id, assigned_projects_id, role) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param('ssiis', $name, $email, $expertise_id, $assigned_projects_id, $role);
-
-        if ($stmt->execute()) {
-            $success_message = "Profile inserted successfully.";
+        if ($result && $result->num_rows > 0) {
+            // Insert into database
+            $stmt = $con->prepare("INSERT INTO researcher_profiles (name, email, expertise_id, assigned_projects_id, role) VALUES (?, ?, ?, ?, ?)");
+            if ($stmt) {
+                $stmt->bind_param('ssiis', $name, $email, $expertise_id, $assigned_projects_id, $role);
+                if ($stmt->execute()) {
+                    $success_message = "Profile inserted successfully.";
+                } else {
+                    $error_message = "Error inserting profile: " . $stmt->error;
+                }
+                $stmt->close();
+            } else {
+                $error_message = "Database error: " . $con->error;
+            }
         } else {
-            $error_message = "Error inserting profile: " . $stmt->error;
+            $error_message = "The 'role' column does not exist in the researcher_profiles table. Please update your database schema.";
         }
-
-        $stmt->close();
     }
 }
+
+$con->close();
 ?>
 
 <!DOCTYPE html>
@@ -46,7 +63,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Insert New Researcher</title>
     <link rel="stylesheet" href="../css/navigation.css">
     <style>
-        /* General body styling */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -54,8 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background-color: #ffffff;
             color: #333;
         }
-
-        /* Container styling */
         .container {
             width: 50%;
             margin: auto;
@@ -64,20 +78,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 8px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
         }
-
         h1 {
             text-align: center;
             color: #4CAF50;
-            font-size: 28px;
-            font-weight: bold;
         }
-
         label {
             font-weight: bold;
         }
-
-        /* Input fields styling */
-        input[type="text"], input[type="submit"] {
+        input[type="text"], input[type="email"], input[type="number"], input[type="submit"] {
             width: 100%;
             padding: 10px;
             margin-top: 8px;
@@ -85,30 +93,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: 1px solid #ccc;
             border-radius: 4px;
         }
-
-        /* Submit button styling */
         input[type="submit"] {
             background-color: #4CAF50;
             color: white;
             cursor: pointer;
         }
-
         input[type="submit"]:hover {
             background-color: #45a049;
         }
-
-        /* Success and error message styling */
-        .success-message, .error-message {
+        .success-message {
+            color: green;
             text-align: center;
             font-weight: bold;
         }
-
-        .success-message {
-            color: green;
-        }
-
         .error-message {
             color: red;
+            text-align: center;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -116,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php include('../navigation.php'); ?>
 
     <div class="container">
-        <h1>Insert New Profile</h1>
+        <h1>Insert New Researcher</h1>
 
         <?php if (!empty($success_message)): ?>
             <p class="success-message"><?php echo $success_message; ?></p>
@@ -131,13 +132,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="text" name="name" id="name" required>
 
             <label for="email">Email:</label>
-            <input type="text" name="email" id="email" required>
+            <input type="email" name="email" id="email" required>
 
-            <label for="expertise_id">Area of Expertise:</label>
-            <input type="text" name="expertise_id" id="expertise_id" required>
+            <label for="expertise_id">Expertise ID:</label>
+            <input type="number" name="expertise_id" id="expertise_id" required>
 
             <label for="assigned_projects_id">Assigned Projects ID:</label>
-            <input type="text" name="assigned_projects_id" id="assigned_projects_id" required>
+            <input type="number" name="assigned_projects_id" id="assigned_projects_id" required>
 
             <label for="role">Role:</label>
             <input type="text" name="role" id="role" required>

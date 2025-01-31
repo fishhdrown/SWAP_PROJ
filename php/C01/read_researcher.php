@@ -1,29 +1,27 @@
 <?php
+// Database credentials
+$dbHost = 'localhost';
+$dbUser = 'admin';
+$dbPass = 'admin';
+$dbName = 'project_swap';
 
-$result = null;
+// Connect to MySQL
+$con = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Database credentials
-    $dbHost = getenv('DB_HOST') ?: 'localhost';
-    $dbUser = 'admin';
-    $dbPass = 'admin';
-    $dbName = 'project_swap';
-
-    // Connect to MySQL
-    $con = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
-    return $con;
-
-    // Fetch researcher profiles
-    $stmt = $con->prepare("SELECT * FROM researcher_profiles");
-    if (!$stmt) {
-        die("Query failed: " . $con->error);
-    }
-    
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    $stmt->close();
+if ($con->connect_error) {
+    die("Connection failed: " . $con->connect_error);
 }
+
+// Fetch researcher profiles
+$stmt = $con->prepare("SELECT name, email, expertise_id, assigned_projects_id, role FROM researcher_profiles");
+if (!$stmt) {
+    die("Query failed: " . $con->error);
+}
+
+$stmt->execute();
+$result = $stmt->get_result();
+$stmt->close();
+$con->close();
 ?>
 
 <!DOCTYPE html>
@@ -41,13 +39,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background-color: #ffffff;
             color: #333;
         }
-
         h1 {
             text-align: center;
             color: #4CAF50;
             padding: 15px;
         }
-
         table {
             width: 80%;
             margin: auto;
@@ -56,45 +52,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 8px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
         }
-
         th, td {
             padding: 12px;
             border: 1px solid #ddd;
             text-align: center;
         }
-
         th {
             background-color: #4CAF50;
             color: white;
         }
-
-        .button-container {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        button {
-            background-color: #4CAF50;
+        /* Styling for the Edit button */
+        .edit-btn {
+            background-color:#4caf50;
             color: white;
             border: none;
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 8px 16px;
+            font-size: 14px;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease-in-out;
+            text-decoration: none;
+            display: inline-block;
         }
-
-        button:hover {
-            background-color: #45a049;
+        .edit-btn:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <?php include('../navigation.php'); ?>
     
-    <div class="header-container">
-        <h1>Researcher Profiles</h1>
-    </div>
-    
+    <h1>Researcher Profiles</h1>
     <table>
         <tr>
             <th>Name</th>
@@ -107,13 +95,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php if ($result && $result->num_rows > 0): ?>
             <?php while ($row = $result->fetch_assoc()): ?>
                 <tr>
-                    <td><?php echo htmlspecialchars($row['name']); ?></td>
-                    <td><?php echo htmlspecialchars($row['email'] ?? ''); ?></td>
-                    <td><?php echo htmlspecialchars($row['expertise_id'] ?? ''); ?></td>
-                    <td><?php echo htmlspecialchars($row['assigned_projects_id'] ?? ''); ?></td>
-                    <td><?php echo htmlspecialchars($row['role'] ?? ''); ?></td>
+                    <td><?php echo htmlspecialchars($row['name'] ?? 'N/A'); ?></td>
+                    <td><?php echo htmlspecialchars($row['email'] ?? 'N/A'); ?></td>
+                    <td><?php echo htmlspecialchars($row['expertise_id'] ?? 'N/A'); ?></td>
+                    <td><?php echo htmlspecialchars($row['assigned_projects_id'] ?? 'N/A'); ?></td>
+                    <td><?php echo htmlspecialchars($row['role'] ?? 'N/A'); ?></td>
                     <td>
-                        <button>Edit</button>
+                        <a href="select_researcher.php?email=<?php echo urlencode($row['email']); ?>" class="edit-btn">Edit</a>
                     </td>
                 </tr>
             <?php endwhile; ?>

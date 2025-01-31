@@ -13,15 +13,17 @@ if (!$con) {
 $success_message = "";
 $error_message = "";
 
+// If form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = $_POST['id'];
+    $id = intval($_POST['id']);
     $name = htmlspecialchars(trim($_POST['name']));
     $email = htmlspecialchars(trim($_POST['email']));
     $expertise_id = intval($_POST['expertise_id']);
     $assigned_projects_id = intval($_POST['assigned_projects_id']);
+    $role = htmlspecialchars(trim($_POST['role']));
 
-    $stmt = $con->prepare("UPDATE researcher_profiles SET name = ?, email = ?, expertise_id = ?, assigned_projects_id = ? WHERE id = ?");
-    $stmt->bind_param('ssiii', $name, $email, $expertise_id, $assigned_projects_id, $id);
+    $stmt = $con->prepare("UPDATE researcher_profiles SET name = ?, email = ?, expertise_id = ?, assigned_projects_id = ?, role = ? WHERE id = ?");
+    $stmt->bind_param('ssiisi', $name, $email, $expertise_id, $assigned_projects_id, $role, $id);
 
     if ($stmt->execute()) {
         header("Location: select_researcher.php"); // Redirect after update
@@ -29,11 +31,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $error_message = "Error updating record: " . $stmt->error;
     }
-
     $stmt->close();
 } else {
     $item_id = isset($_GET['item_id']) ? intval($_GET['item_id']) : 0;
     
+    // Debugging to check if ID is passed correctly
+    if ($item_id == 0) {
+        die('Invalid researcher ID.');
+    }
+
     $stmt = $con->prepare("SELECT * FROM researcher_profiles WHERE id = ?");
     $stmt->bind_param("i", $item_id);
     $stmt->execute();
@@ -96,16 +102,6 @@ $con->close();
         input[type="submit"]:hover {
             background-color: #45a049;
         }
-        .success-message, .error-message {
-            text-align: center;
-            font-weight: bold;
-        }
-        .success-message {
-            color: green;
-        }
-        .error-message {
-            color: red;
-        }
     </style>
 </head>
 <body>
@@ -113,9 +109,6 @@ $con->close();
 
     <div class="container">
         <h1>Update Researcher</h1>
-        <?php if ($error_message): ?>
-            <p class="error-message"><?php echo $error_message; ?></p>
-        <?php endif; ?>
         <form action="update_researcher.php" method="POST">
             <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
             
@@ -131,9 +124,11 @@ $con->close();
             <label for="assigned_projects_id">Assigned Projects ID:</label>
             <input type="text" name="assigned_projects_id" id="assigned_projects_id" value="<?php echo $row['assigned_projects_id']; ?>" required>
             
+            <label for="role">Role:</label>
+            <input type="text" name="role" id="role" value="<?php echo $row['role']; ?>" required>
+
             <input type="submit" value="Update Record">
         </form>
     </div>
 </body>
 </html>
-

@@ -40,11 +40,6 @@ $stmt->close();
             font-size: 28px;
             font-weight: bold;
         }
-        .header-container {
-            text-align: center;
-            margin-top: 120px;
-            margin-bottom: 20px;
-        }
         table {
             width: 80%;
             margin: auto;
@@ -70,51 +65,45 @@ $stmt->close();
             justify-content: center;
             gap: 10px;
         }
-        .action-buttons button {
-            padding: 10px 20px;
-            font-size: 14px;
-            cursor: pointer;
+        .edit-btn, .delete-btn {
+            padding: 8px 16px;
             border: none;
             border-radius: 5px;
-            transition: background-color 0.3s, transform 0.2s;
+            cursor: pointer;
+            transition: 0.3s;
         }
-        .action-buttons .edit {
+        .edit-btn {
             background-color: #4CAF50;
             color: white;
         }
-        .action-buttons .edit:hover {
+        .edit-btn:hover {
             background-color: #45a049;
-            transform: scale(1.05);
         }
-        .action-buttons .delete {
-            background-color: #f44336;
+        .delete-btn {
+            background-color: #d9534f;
             color: white;
         }
-        .action-buttons .delete:hover {
-            background-color: #e53935;
-            transform: scale(1.05);
+        .delete-btn:hover {
+            background-color: #c9302c;
         }
     </style>
 </head>
 <body>
     <?php include('../navigation.php'); ?>
     
-    <div class="header-container">
-        <h1>Researcher Profiles</h1>
-    </div>
-    
+    <h1>Researcher Profiles</h1>
+
     <table>
         <tr>
-            <th>ID</th>
             <th>Name</th>
             <th>Email</th>
             <th>Expertise ID</th>
             <th>Assigned Projects ID</th>
+            <th>Role</th>
             <th>Actions</th>
         </tr>
         <?php while ($row = $result->fetch_assoc()): ?>
             <tr>
-                <td><?php echo htmlspecialchars($row['id']); ?></td>
                 <td><?php echo htmlspecialchars($row['name']); ?></td>
                 <td><?php echo htmlspecialchars($row['email']); ?></td>
                 <td><?php echo htmlspecialchars($row['expertise_id']); ?></td>
@@ -122,15 +111,21 @@ $stmt->close();
                 <td><?php echo htmlspecialchars($row['role']); ?></td>
                 <td class="action-buttons">
                     <a href="update_researcher.php?item_id=<?php echo $row['id']; ?>">
-                        <button class="edit">Edit</button>
+                        <button class="edit-btn">Edit</button>
                     </a>
-                    <a href="delete_researcher.php?item_id=<?php echo $row['id']; ?>" onclick="return confirm('Are you sure you want to delete this researcher?');">
-                        <button class="delete">Delete</button>
-                    </a>
+                    <button class="delete-btn" onclick="confirmDelete(<?php echo $row['id']; ?>)">Delete</button>
                 </td>
             </tr>
         <?php endwhile; ?>
     </table>
+
+    <script>
+        function confirmDelete(id) {
+            if (confirm("Are you sure you want to delete this researcher? This action cannot be undone.")) {
+                window.location.href = "delete_researcher.php?item_id=" + id;
+            }
+        }
+    </script>
 </body>
 </html>
 <?php mysqli_close($con); ?>

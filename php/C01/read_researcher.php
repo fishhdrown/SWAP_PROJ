@@ -1,21 +1,27 @@
 <?php
+
+$result = null;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Database credentials
-    $dbHost = 'localhost';  // Server location
-    $dbUser = 'admin';      // Username
-    $dbPass = 'admin';      // Password
-    $dbName = 'project_swap'; // Database name
+    $dbHost = getenv('DB_HOST') ?: 'localhost';
+    $dbUser = 'admin';
+    $dbPass = 'admin';
+    $dbName = 'project_swap';
 
-    // Connect to database
-    $con = mysqli_connect($dbHost, $dbUser, $dbPass, $dbName);
-    if (!$con) {
-        die('Could not connect: ' . mysqli_connect_error());
-    }
+    // Connect to MySQL
+    $con = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
+    return $con;
 
     // Fetch researcher profiles
     $stmt = $con->prepare("SELECT * FROM researcher_profiles");
+    if (!$stmt) {
+        die("Query failed: " . $con->error);
+    }
+    
     $stmt->execute();
     $result = $stmt->get_result();
+
     $stmt->close();
 }
 ?>
@@ -28,40 +34,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Researcher Profiles</title>
     <link rel="stylesheet" href="../css/navigation.css">
     <style>
-        /* General body styling */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding-top: 140px; /* Ensure padding accounts for the navbar height */
+            padding-top: 140px;
             background-color: #ffffff;
             color: #333;
         }
 
         h1 {
             text-align: center;
-            margin-bottom: 10px; /* Reduced spacing between header and table */
             color: #4CAF50;
             padding: 15px;
-            font-size: 28px;
-            font-weight: bold;
         }
 
-        .header-container {
-            text-align: center;
-            margin-top: 120px;
-            margin-bottom: 20px; /* Adjusted margin for better spacing */
-        }
-
-        /* Table styling */
         table {
             width: 80%;
-            margin: auto; /* Center table horizontally */
-            margin-top: 12px; /* Added margin-top to lower the table */
+            margin: auto;
             border-collapse: collapse;
             background-color: white;
-            color: #333;
             border-radius: 8px;
-            overflow: hidden;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
         }
 
@@ -76,7 +68,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: white;
         }
 
-        /* Button styling */
         .button-container {
             text-align: center;
             margin-top: 20px;
@@ -106,7 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <table>
         <tr>
-            <th>ID</th>
             <th>Name</th>
             <th>Email</th>
             <th>Expertise ID</th>
@@ -114,20 +104,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <th>Role</th>
             <th>Actions</th>
         </tr>
-        <?php while ($row = $result->fetch_assoc()): ?>
-            <tr>
-                <td><?php echo htmlspecialchars($row['name']); ?></td>
-                <td><?php echo htmlspecialchars($row['email']); ?></td>
-                <td><?php echo htmlspecialchars($row['expertise_id']); ?></td>
-                <td><?php echo htmlspecialchars($row['assigned_projects_id']); ?></td>
-                <td><?php echo htmlspecialchars($row['role']); ?></td>
-                <td>
-                    <a href="select_researcher.php?id=<?php echo $row['id']; ?>">
+        <?php if ($result && $result->num_rows > 0): ?>
+            <?php while ($row = $result->fetch_assoc()): ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($row['name']); ?></td>
+                    <td><?php echo htmlspecialchars($row['email'] ?? ''); ?></td>
+                    <td><?php echo htmlspecialchars($row['expertise_id'] ?? ''); ?></td>
+                    <td><?php echo htmlspecialchars($row['assigned_projects_id'] ?? ''); ?></td>
+                    <td><?php echo htmlspecialchars($row['role'] ?? ''); ?></td>
+                    <td>
                         <button>Edit</button>
-                    </a>
-                </td>
+                    </td>
+                </tr>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <tr>
+                <td colspan="6">No data found</td>
             </tr>
-        <?php endwhile; ?>
+        <?php endif; ?>
     </table>
 </body>
 </html>

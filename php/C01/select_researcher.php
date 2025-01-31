@@ -119,6 +119,7 @@ $stmt->close();
                 <td><?php echo htmlspecialchars($row['email']); ?></td>
                 <td><?php echo htmlspecialchars($row['expertise_id']); ?></td>
                 <td><?php echo htmlspecialchars($row['assigned_projects_id']); ?></td>
+                <td><?php echo htmlspecialchars($row['role']); ?></td>
                 <td class="action-buttons">
                     <a href="update_researcher.php?item_id=<?php echo $row['id']; ?>">
                         <button class="edit">Edit</button>

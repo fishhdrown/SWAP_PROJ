@@ -1,6 +1,6 @@
 <?php
 session_start();
-$conn = new mysqli("localhost", "root", "", "swap_project_db");
+$conn = new mysqli("localhost", "root", "", "project_swap");
 
 if ($conn->connect_error) {
     die("Database connection failed.");

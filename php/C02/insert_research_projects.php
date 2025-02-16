@@ -1,6 +1,18 @@
 <?php
+session_start(); // Start session for CSRF protection
+
+// Generate CSRF token if not already set
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 // Start of PHP logic for form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Check CSRF token
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF validation failed.");
+    }
+
     // Database credentials
     $dbHost = 'localhost';  // server location
     $dbUser = 'admin';      // username
@@ -15,22 +27,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die("Connection failed: " . $conn->connect_error);
     }
 
-    // Retrieve form data
-    $in_title = htmlspecialchars($_POST['in_title']);
-    $in_description = htmlspecialchars($_POST['in_description']);
-    $in_funding = htmlspecialchars($_POST['in_funding']);
+    // Retrieve and sanitize form data
+    $in_title = htmlspecialchars(trim($_POST['in_title']));
+    $in_description = htmlspecialchars(trim($_POST['in_description']));
+    $in_funding = filter_var($_POST['in_funding'], FILTER_VALIDATE_INT);
 
     // Input validation
-    if (empty($in_title) || empty($in_description) || empty($in_funding)) {
+    if (empty($in_title) || empty($in_description) || $in_funding === false) {
         echo "
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
-                    alert('All fields are required!');
+                    alert('All fields are required and funding must be a valid number!');
                 });
             </script>
         ";
     } else {
-        // Check for duplicate title
+        // Check for duplicate title securely
         $check_query = $conn->prepare("SELECT COUNT(*) FROM research_projects WHERE title = ?");
         $check_query->bind_param('s', $in_title);
         $check_query->execute();
@@ -47,9 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </script>
             ";
         } else {
-            // Insert project
+            // Insert project securely
             $stmt = $conn->prepare("INSERT INTO research_projects (`title`, `description`, `funding`) VALUES (?, ?, ?)");
-
             if ($stmt) {
                 $stmt->bind_param('ssi', $in_title, $in_description, $in_funding);
                 if ($stmt->execute()) {
@@ -57,13 +68,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             document.addEventListener('DOMContentLoaded', function () {
                                 alert('Project inserted successfully!');
                             });
-                            </script>";
+                          </script>";
                 } else {
                     echo "<script>
                             document.addEventListener('DOMContentLoaded', function () {
                                 alert('Error inserting data.');
                             });
-                            </script>";
+                          </script>";
                 }
                 $stmt->close();
             } else {
@@ -71,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
-
+    
     $conn->close();
 }
 ?>
@@ -83,41 +94,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="http://localhost/SWAP_PROJ/css/C02_read.css">
     <style>
-        /* Adjust for margin-top to prevent overlap with fixed navbar */
         body {
             margin: 0;
             padding: 0;
         }
 
         .container {
-            margin-top: 80px; /* Adjust based on your navbar height (60px) + padding */
+            margin-top: 80px;
             padding: 20px;
         }
 
-        #title {
+        .form-title {
+            font-size: 24px;
             text-align: center;
         }
 
-        table {
-            width: 100%;
-            max-width: 600px;
-            margin: 20px auto;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f2f2f2;
+        .form-group {
+            margin-bottom: 15px;
         }
 
         input[type="text"], input[type="number"] {
             width: 100%;
             padding: 8px;
-            margin: 5px 0;
             border: 1px solid #ccc;
             border-radius: 4px;
         }
@@ -134,16 +132,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         input[type="submit"]:hover {
             background-color: #45a049;
         }
-
-        .form-title {
-            font-size: 24px;
-            text-align: center;
-        }
-
-        .error-message {
-            color: red;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
@@ -156,6 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- Form to insert a new research project -->
         <form action="" method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
             <div class="form-group">
                 <label for="in_title">Title:</label>
                 <input type="text" name="in_title" id="in_title" required>
@@ -175,11 +164,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="submit" value="Insert Record">
             </div>
         </form>
-
-        <!-- Error or success message -->
-        <?php if ($_SERVER['REQUEST_METHOD'] === 'POST' && (empty($in_title) || empty($in_description) || empty($in_funding))): ?>
-            <p class="error-message">Please fill in all fields before submitting.</p>
-        <?php endif; ?>
     </div>
 
 </body>

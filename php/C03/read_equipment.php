@@ -1,6 +1,6 @@
 <?php
 
-$conn = mysqli_connect("localhost", "root", "", "swap_project_db");
+$conn = mysqli_connect("localhost", "root", "", "project_swap");
 
 
 if (!$conn) {
